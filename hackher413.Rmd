@@ -1,0 +1,101 @@
+---
+title: "Visualizing the Opioid Crisis"
+output:
+flexdashboard::flex_dashboard:
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, eval = TRUE, fig.width = 5,
+  fig.asp = 0.618, out.width = "80%", dpi = 120,
+  fig.align = "center", cache = FALSE
+)
+
+
+# Load packages
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(highcharter))
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(lubridate))
+```
+
+```{r, include = FALSE}
+opioid = read.csv("opioidwithgeo.csv")
+
+opioidOD = read.csv("opioidOD.csv")
+
+usBud = read.csv("usBudget.csv")
+
+portOD = read.csv("portugalOD.csv")
+
+yearSum <- opioid %>% group_by(Year) %>% summarise(sum = sum(Deaths))
+
+```
+
+Understanding the Data and Predicting the Future
+=================================================
+
+{data-width=600}
+-------------------------------------
+
+## Overdose Deaths in Portugal and US
+
+```{r, echo=FALSE, eval = TRUE}
+lineplot = ggplot(data = opioidOD, mapping = aes(x = Year, y = Death)) + ylab("Deaths Per 100k People") + geom_point() + xlim(1999, 2030) + ylim(2, 20) + geom_smooth(method  = "lm", color = "red") + geom_abline(slope = 0.6013, intercept = -1200.4043 , color = "red")
+
+ggplotly(lineplot)
+
+lineplot1 = ggplot(data = portOD, mapping = aes(x = Year, y = Deaths)) + ylab("Deaths Per 100k People") + geom_point() + xlim(1999, 2030) + ylim(2, 100) + geom_smooth(method  = "lm", color = "yellow") +geom_abline(slope =  -0.1759  , intercept = 386.0752 , color = "yellow")
+
+```
+
+#US Drug Enforcement Spending
+```{r, echo=FALSE, eval = TRUE}
+
+ggplotly(lineplot1)
+
+lineplot2 = ggplot(data = usBud, mapping = aes(x = Year, y = Billion)) + ylab("Dollars in Billions") + geom_point() + xlim(1999, 2030) + ylim(1.5, 5) + geom_smooth(method  = "lm", color = "blue") + geom_abline(slope = 0.07955, intercept = -157.36332, color = "blue")
+
+
+
+ggplotly(lineplot2)
+```
+
+Overdose by State
+================================
+
+
+### Interactive Map
+```{r, echo = FALSE, eval = TRUE}
+
+bins = c(0, 100,200,300,400, 500, Inf)
+pal = colorBin("YlOrRd", domain = opioid$Deaths, bins = bins)
+
+
+leaflet() %>% 
+  addProviderTiles(providers$ CartoDB.DarkMatter) %>%
+  
+  addCircleMarkers(
+    lat = opioid$lat, 
+    lng = opioid$long,  
+    popup = paste(
+      "Deaths:", opioid$Deaths,
+      "<br>", "Population:", opioid$Population, 
+      "<br>","Prescriptions Dispensed in Millions:", opioid$Prescriptions.Dispensed.by.US.Retailers.in.that.year..millions.), 
+    color = pal(opioid$Death),
+    group = opioid$Year) %>%
+  
+  addLayersControl(
+    baseGroups = opioid$Year,
+    options = layersControlOptions(collapsed=FALSE)) %>%
+  
+  addLegend(
+    'bottomleft', 
+    pal = pal, 
+    values = opioid$Death,
+    title = 'Death Toll',
+    opacity = 1)
+
+```
