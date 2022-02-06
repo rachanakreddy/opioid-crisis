@@ -48,13 +48,13 @@ lineplot = ggplot(data = opioidOD, mapping = aes(x = Year, y = Death)) + ylab("D
 ggplotly(lineplot)
 
 lineplot1 = ggplot(data = portOD, mapping = aes(x = Year, y = Deaths)) + ylab("Deaths Per 100k People") + geom_point() + xlim(1999, 2030) + ylim(2, 100) + geom_smooth(method  = "lm", color = "yellow") +geom_abline(slope =  -0.1759  , intercept = 386.0752 , color = "yellow")
-
+ggplotly(lineplot1)
 ```
 
-#US Drug Enforcement Spending
+## US Drug Enforcement Spending
 ```{r, echo=FALSE, eval = TRUE}
 
-ggplotly(lineplot1)
+
 
 lineplot2 = ggplot(data = usBud, mapping = aes(x = Year, y = Billion)) + ylab("Dollars in Billions") + geom_point() + xlim(1999, 2030) + ylim(1.5, 5) + geom_smooth(method  = "lm", color = "blue") + geom_abline(slope = 0.07955, intercept = -157.36332, color = "blue")
 
